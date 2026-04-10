@@ -816,8 +816,11 @@ function closeModal(id){document.getElementById(id).style.display='none';}
 
 // ── INIT ─────────────────────────────────────────────────────────
 (async()=>{
-  const isInterview=await checkForInterview();
-  if(!isInterview){
+  const params=new URLSearchParams(location.search);
+  const token=params.get('token');
+  if(token){
+    await checkForInterview();
+  } else {
     if(checkAuth())showCompanies();
     else show('s-login');
   }
