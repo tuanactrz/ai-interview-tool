@@ -699,7 +699,7 @@ async function checkForInterview(){
   if(candidate.status==='completed'){show('s-done');return true;}
 
   interviewCandidateId=candidate.id;
-  currentRole.candidateName=candidate.name;
+if(currentRole) currentRole.candidateName=candidate.name;
   const role=await db('getRole',{id:candidate.role_id});
   currentRole=role;
   questions=role.questions||[];
