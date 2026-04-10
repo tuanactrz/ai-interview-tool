@@ -78,6 +78,40 @@ export default async function handler(req, res) {
       const data = await query(`interview_results?candidate_id=eq.${req.query.candidate_id}`);
       return res.json(data[0]);
     }
+    if (action === 'getVideoUrls') {
+      const { candidate_id, candidate_name, question_count } = req.query;
+      const folderName = (candidate_name || 'aday')
+        .replace(/[^a-zA-Z0-9ğüşıöçĞÜŞİÖÇ\s]/g, '')
+        .trim()
+        .replace(/\s+/g, '_');
+      const shortId = candidate_id.substring(0, 8);
+      const urls = [];
+      for (let i = 0; i < parseInt(question_count); i++) {
+        const path = `${folderName}_${shortId}/soru_${i + 1}.webm`;
+        const signRes = await fetch(
+          `${SUPABASE_URL}/storage/v1/object/sign/interview-videos/${path}`,
+          {
+            method: 'POST',
+            headers: {
+              'Authorization': `Bearer ${SUPABASE_SECRET_KEY}`,
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ expiresIn: 3600 })
+          }
+        );
+        const signData = await signRes.json();
+        if (signData.signedURL) {
+          urls.push({
+            question: i + 1,
+            url: `${SUPABASE_URL}/storage/v1${signData.signedURL}`,
+            download: `${SUPABASE_URL}/storage/v1/object/sign/interview-videos/${path}?download=true`
+          });
+        } else {
+          urls.push({ question: i + 1, url: null });
+        }
+      }
+      return res.json(urls);
+    }
     return res.status(400).json({ error: 'Unknown action' });
   } catch (err) {
     console.error(err);
