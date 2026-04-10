@@ -669,12 +669,20 @@ async function showResultDetail(candidateId, candidateName){
   const weaknesses=(r.weaknesses||[]).map(w=>`<span class="tag tag-w">${w}</span>`).join('');
   const fb=r.qa_feedback||[];
   const qs=currentRole.questions||[];
-  const qaBlocks=qs.map((q,i)=>`
-    <div class="q-block">
+ const qaBlocks=qs.map((q,i)=>{
+    const vid=videoUrls&&videoUrls[i];
+    const videoHtml=vid&&vid.url?`
+      <div style="margin-top:10px">
+        <video controls style="width:100%;border-radius:8px;background:#111;max-height:240px" src="${vid.url}"></video>
+        <a href="${vid.url}" download="soru_${i+1}.webm" style="display:inline-flex;align-items:center;gap:6px;margin-top:6px;font-size:12px;color:#7c6af7;text-decoration:none">⬇️ İndir</a>
+      </div>`:'';
+    return `<div class="q-block">
       <div class="q-lbl">S${i+1}: ${q}</div>
       <div style="color:#444;margin-bottom:${fb[i]?.brief_feedback?'6px':'0'}">${(r.transcripts||[])[i]||'[Cevap yok]'}</div>
       ${fb[i]?.brief_feedback?`<div style="font-size:12px;color:#7c6af7;font-style:italic">${fb[i].brief_feedback}</div>`:''}
-    </div>`).join('');
+      ${videoHtml}
+    </div>`;
+  }).join('');
   card.innerHTML=`
     <h2 style="margin-bottom:1.5rem">${candidateName}</h2>
     <div class="results-sec">
