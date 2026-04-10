@@ -749,17 +749,23 @@ function startRec(){
   isRec=true; chunks=[]; curTranscript='';
   mediaRecorder=new MediaRecorder(camStream);
   mediaRecorder.ondataavailable=e=>{if(e.data.size>0)chunks.push(e.data);};
-  mediaRecorder.onstop=async()=>{
+ mediaRecorder.onstop=async()=>{
     const blob=new Blob(chunks,{type:'video/webm'});
     recordings[curQ]=blob;
-    // upload video
     try{
+      const candidateName=currentRole?.candidateName||'aday';
       await fetch('/api/upload',{
         method:'POST',
-        headers:{'Content-Type':'video/webm','x-candidate-id':interviewCandidateId,'x-question-index':curQ},
+        headers:{
+          'Content-Type':'video/webm',
+          'x-candidate-id':interviewCandidateId,
+          'x-question-index':curQ,
+          'x-candidate-name':candidateName
+        },
         body:blob
       });
-    }catch(e){}
+    }catch(e){console.error('Upload failed:',e);}
+    document.getElementById('next-btn').disabled=false;
   };
   mediaRecorder.start();
   document.getElementById('rec-btn').textContent='Kaydı durdur';
