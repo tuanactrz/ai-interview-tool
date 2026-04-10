@@ -699,6 +699,7 @@ async function checkForInterview(){
   if(candidate.status==='completed'){show('s-done');return true;}
 
   interviewCandidateId=candidate.id;
+  currentRole.candidateName=candidate.name;
   const role=await db('getRole',{id:candidate.role_id});
   currentRole=role;
   questions=role.questions||[];
@@ -766,6 +767,7 @@ function startRec(){
       });
     }catch(e){console.error('Upload failed:',e);}
     document.getElementById('next-btn').disabled=false;
+   document.getElementById('rec-status').innerHTML='Cevap kaydedildi ve yüklendi';
   };
   mediaRecorder.start();
   document.getElementById('rec-btn').textContent='Kaydı durdur';
@@ -803,7 +805,8 @@ function stopRec(){
   document.getElementById('rec-btn').textContent='Tekrar kaydet';
   document.getElementById('rec-btn').style.background='#888';
   document.getElementById('rec-status').innerHTML='Cevap kaydedildi';
-  document.getElementById('next-btn').disabled=true;
+document.getElementById('next-btn').disabled=true;
+  document.getElementById('rec-status').innerHTML='Video yükleniyor...';
   document.getElementById('rec-status').innerHTML='Video yükleniyor...';
 }
 
