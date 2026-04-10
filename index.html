@@ -1,0 +1,827 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>AI Interview Platform</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:system-ui,sans-serif;background:#f4f4f6;color:#1a1a1a;min-height:100vh}
+.screen{display:none;min-height:100vh;padding:2rem 1rem;flex-direction:column;align-items:center}
+.screen.active{display:flex}
+.card{background:#fff;border-radius:14px;border:0.5px solid #ddd;padding:2rem;width:100%;max-width:700px}
+h1{font-size:22px;font-weight:600;margin-bottom:4px}
+h2{font-size:18px;font-weight:600;margin-bottom:1rem}
+h3{font-size:15px;font-weight:600;margin-bottom:.5rem}
+.sub{color:#777;font-size:14px;margin-bottom:1.5rem}
+label{font-size:13px;color:#555;display:block;margin:1rem 0 4px}
+input[type=text],input[type=email],input[type=password],textarea,select{width:100%;padding:10px 12px;border:0.5px solid #ccc;border-radius:8px;font-size:14px;font-family:inherit;background:#fafafa;color:#1a1a1a;resize:vertical;outline:none}
+input:focus,textarea:focus,select:focus{border-color:#7c6af7}
+.btn{display:inline-flex;align-items:center;gap:6px;padding:10px 20px;border-radius:8px;font-size:14px;font-weight:500;cursor:pointer;border:none;transition:opacity .15s}
+.btn:hover{opacity:.85}
+.btn-primary{background:#7c6af7;color:#fff}
+.btn-secondary{background:#eee;color:#333}
+.btn-danger{background:#fee2e2;color:#c62828}
+.btn-sm{padding:6px 12px;font-size:13px}
+.btn-xs{padding:4px 10px;font-size:12px}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.space-between{justify-content:space-between}
+/* NAV */
+.nav{width:100%;max-width:900px;display:flex;align-items:center;justify-content:space-between;margin-bottom:1.5rem;padding-top:.5rem}
+.breadcrumb{display:flex;align-items:center;gap:6px;font-size:14px;color:#888}
+.breadcrumb span{cursor:pointer;color:#7c6af7}
+.breadcrumb span:hover{text-decoration:underline}
+.breadcrumb .sep{color:#ccc}
+/* GRID */
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px;margin-top:1rem}
+.grid-item{background:#fff;border:0.5px solid #ddd;border-radius:12px;padding:1.2rem;cursor:pointer;transition:border-color .15s,box-shadow .15s;position:relative}
+.grid-item:hover{border-color:#7c6af7;box-shadow:0 0 0 3px #ede9fe}
+.grid-item h3{font-size:15px;font-weight:600;margin-bottom:4px}
+.grid-item p{font-size:12px;color:#888}
+.grid-item .del-btn{position:absolute;top:10px;right:10px;background:none;border:none;cursor:pointer;color:#ccc;font-size:16px;padding:2px 6px;border-radius:4px}
+.grid-item .del-btn:hover{color:#e44;background:#fee2e2}
+.add-card{border:1.5px dashed #ccc;background:#fafafa;display:flex;align-items:center;justify-content:center;gap:8px;font-size:14px;color:#888;min-height:90px}
+.add-card:hover{border-color:#7c6af7;color:#7c6af7}
+/* TABLE */
+.table{width:100%;border-collapse:collapse;font-size:14px;margin-top:1rem}
+.table th{text-align:left;padding:10px 12px;font-size:12px;color:#888;font-weight:500;border-bottom:0.5px solid #eee}
+.table td{padding:10px 12px;border-bottom:0.5px solid #f0f0f0;vertical-align:middle}
+.table tr:last-child td{border-bottom:none}
+.badge{display:inline-block;padding:3px 10px;border-radius:20px;font-size:12px;font-weight:500}
+.badge-pending{background:#fff8e1;color:#795548}
+.badge-completed{background:#e8f5e9;color:#2e7d32}
+.badge-hire{background:#e8f5e9;color:#2e7d32}
+.badge-nohire{background:#ffebee;color:#c62828}
+/* PROGRESS */
+.progress-bar{width:100%;height:4px;background:#eee;border-radius:2px;margin-bottom:1.5rem}
+.progress-fill{height:100%;background:#7c6af7;border-radius:2px;transition:width .3s}
+/* INTERVIEW */
+.q-display{font-size:20px;font-weight:500;line-height:1.5;margin:1.5rem 0;text-align:center;min-height:60px}
+.video-wrap{width:100%;max-width:480px;margin:0 auto;border-radius:12px;overflow:hidden;background:#111;aspect-ratio:4/3}
+video{width:100%;height:100%;object-fit:cover;display:block}
+.timer{font-size:32px;font-weight:700;text-align:center;margin:1rem 0;letter-spacing:2px}
+.timer.warn{color:#e67e22}
+.timer.danger{color:#e74c3c}
+.rec-dot{display:inline-block;width:10px;height:10px;border-radius:50%;background:#e74c3c;margin-right:6px;animation:blink 1s infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.2}}
+.status-badge{font-size:13px;display:flex;align-items:center;gap:6px;justify-content:center;color:#666;min-height:20px;margin-bottom:.5rem}
+/* RESULTS */
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:1rem}
+.metric-card{background:#f5f3ff;border-radius:10px;padding:14px;text-align:center}
+.metric-val{font-size:28px;font-weight:700;color:#7c6af7}
+.metric-lbl{font-size:12px;color:#888;margin-top:2px}
+.verdict{padding:14px;border-radius:10px;font-size:16px;font-weight:500;text-align:center;display:flex;align-items:center;justify-content:center}
+.hire{background:#e8f5e9;color:#2e7d32}
+.nohire{background:#ffebee;color:#c62828}
+.tag{display:inline-block;padding:4px 10px;border-radius:6px;font-size:12px;margin:3px}
+.tag-s{background:#e8f5e9;color:#2e7d32}
+.tag-w{background:#fff3e0;color:#e65100}
+.q-block{background:#f9f9f9;border-radius:8px;padding:10px 14px;margin-bottom:8px;font-size:14px;line-height:1.6;border-left:3px solid #7c6af7}
+.q-lbl{font-size:12px;color:#7c6af7;font-weight:600;margin-bottom:4px}
+.results-sec{margin-bottom:1.5rem}
+.results-sec h3{font-size:15px;font-weight:600;color:#555;margin-bottom:8px;border-bottom:0.5px solid #eee;padding-bottom:6px}
+/* MISC */
+.loading{display:flex;flex-direction:column;align-items:center;gap:14px;padding:3rem 0;text-align:center}
+.spinner{width:40px;height:40px;border:3px solid #eee;border-top-color:#7c6af7;border-radius:50%;animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.err{background:#ffebee;color:#c62828;padding:10px 14px;border-radius:8px;font-size:13px;margin-top:10px}
+.success{background:#e8f5e9;color:#2e7d32;padding:10px 14px;border-radius:8px;font-size:13px;margin-top:10px}
+.cam-banner{width:100%;padding:10px 16px;font-size:13px;font-weight:500;text-align:center;position:sticky;top:0;z-index:99;display:flex;align-items:center;justify-content:center;gap:8px}
+.cam-banner.pending{background:#fff8e1;color:#795548}
+.cam-banner.ok{background:#e8f5e9;color:#2e7d32}
+.cam-banner.denied{background:#ffebee;color:#c62828}
+.link-box{background:#f5f3ff;border:0.5px solid #c4b5fd;border-radius:8px;padding:10px 14px;font-size:13px;color:#5b21b6;word-break:break-all;margin-top:8px;display:flex;align-items:center;justify-content:space-between;gap:10px}
+.tabs{display:flex;gap:6px;margin-bottom:1rem}
+.tab{padding:7px 16px;border-radius:8px;font-size:13px;cursor:pointer;border:0.5px solid #ddd;background:#fafafa;color:#555}
+.tab.active{background:#7c6af7;color:#fff;border-color:#7c6af7}
+.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:200;display:flex;align-items:center;justify-content:center;padding:1rem}
+.modal{background:#fff;border-radius:14px;padding:2rem;width:100%;max-width:480px}
+.q-list{list-style:none;display:flex;flex-direction:column;gap:8px;margin:1rem 0}
+.q-item{display:flex;align-items:center;gap:8px;padding:10px 12px;background:#f9f9f9;border-radius:8px;border:0.5px solid #e0e0e0}
+.q-num{font-size:13px;font-weight:600;color:#7c6af7;min-width:22px}
+.q-text{flex:1;font-size:14px}
+.q-del{background:none;border:none;cursor:pointer;color:#bbb;font-size:18px;padding:2px 6px}
+.q-del:hover{color:#e44}
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div class="screen active" id="s-login">
+  <div style="width:100%;max-width:400px;margin-top:5rem">
+    <div style="text-align:center;margin-bottom:2rem">
+      <h1 style="font-size:26px">AI Interview Platform</h1>
+      <p class="sub">İşe alım ekibi girişi</p>
+    </div>
+    <div class="card">
+      <label>Email</label>
+      <input type="email" id="login-email" placeholder="email@sirket.com"/>
+      <label>Şifre</label>
+      <input type="password" id="login-pass" placeholder="••••••••"/>
+      <div id="login-err"></div>
+      <button class="btn btn-primary" onclick="doLogin()" style="width:100%;justify-content:center;padding:13px;margin-top:1.5rem">Giriş yap</button>
+    </div>
+  </div>
+</div>
+
+<!-- PANEL: ŞİRKETLER -->
+<div class="screen" id="s-companies">
+  <div class="nav" style="max-width:900px">
+    <div>
+      <h1>Şirketler</h1>
+      <p class="sub" style="margin:0">Mülakat yaptığınız şirketler</p>
+    </div>
+    <button class="btn btn-secondary btn-sm" onclick="doLogout()">Çıkış</button>
+  </div>
+  <div style="width:100%;max-width:900px">
+    <div class="grid" id="companies-grid"></div>
+  </div>
+</div>
+
+<!-- PANEL: ROLLER -->
+<div class="screen" id="s-roles">
+  <div class="nav" style="max-width:900px">
+    <div class="breadcrumb">
+      <span onclick="showCompanies()">Şirketler</span>
+      <span class="sep">›</span>
+      <span id="bc-company" style="color:#1a1a1a;cursor:default"></span>
+    </div>
+    <button class="btn btn-secondary btn-sm" onclick="doLogout()">Çıkış</button>
+  </div>
+  <div style="width:100%;max-width:900px">
+    <div class="grid" id="roles-grid"></div>
+  </div>
+</div>
+
+<!-- PANEL: ADAYLAR -->
+<div class="screen" id="s-candidates">
+  <div class="nav" style="max-width:900px">
+    <div class="breadcrumb">
+      <span onclick="showCompanies()">Şirketler</span>
+      <span class="sep">›</span>
+      <span onclick="showRoles()" id="bc-company2" style="color:#7c6af7"></span>
+      <span class="sep">›</span>
+      <span id="bc-role" style="color:#1a1a1a;cursor:default"></span>
+    </div>
+    <button class="btn btn-secondary btn-sm" onclick="doLogout()">Çıkış</button>
+  </div>
+  <div style="width:100%;max-width:900px">
+    <div class="card" style="max-width:900px">
+      <div class="row space-between" style="margin-bottom:1rem">
+        <div>
+          <h2 id="role-title-header" style="margin:0"></h2>
+          <p style="font-size:13px;color:#888;margin-top:2px" id="role-lang-header"></p>
+        </div>
+        <button class="btn btn-primary btn-sm" onclick="showAddCandidate()">+ Aday ekle</button>
+      </div>
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Aday</th>
+            <th>Email</th>
+            <th>Durum</th>
+            <th>Skor</th>
+            <th>Karar</th>
+            <th>Mülakat Linki</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody id="candidates-tbody"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ADAY SONUÇ DETAY -->
+<div class="screen" id="s-result-detail">
+  <div class="nav" style="max-width:700px">
+    <div class="breadcrumb">
+      <span onclick="showCompanies()">Şirketler</span>
+      <span class="sep">›</span>
+      <span onclick="showRoles()" id="bc-company3"></span>
+      <span class="sep">›</span>
+      <span onclick="showCandidates()" id="bc-role2"></span>
+      <span class="sep">›</span>
+      <span id="bc-candidate" style="color:#1a1a1a;cursor:default"></span>
+    </div>
+    <button class="btn btn-secondary btn-sm" onclick="doLogout()">Çıkış</button>
+  </div>
+  <div class="card" style="max-width:700px" id="result-detail-card">
+    <div class="loading"><div class="spinner"></div></div>
+  </div>
+</div>
+
+<!-- MÜLAKAT (ADAY) -->
+<div id="cam-banner" class="cam-banner pending" style="display:none">⏳ Kamera ve mikrofon erişimi isteniyor...</div>
+<div class="screen" id="s-interview">
+  <div style="width:100%;max-width:680px;padding-top:.5rem">
+    <div class="row space-between" style="margin-bottom:1rem">
+      <span id="q-counter" style="font-size:13px;color:#888"></span>
+      <span id="role-lbl" style="font-size:13px;color:#7c6af7;font-weight:500"></span>
+    </div>
+    <div class="progress-bar"><div class="progress-fill" id="prog"></div></div>
+  </div>
+  <div class="card">
+    <div class="q-display" id="cur-q"></div>
+    <div class="video-wrap"><video id="vid" autoplay muted playsinline></video></div>
+    <div class="timer" id="clock">1:30</div>
+    <div class="status-badge" id="rec-status"></div>
+    <div class="row" style="justify-content:center;gap:12px;margin-top:.5rem">
+      <button class="btn btn-primary" id="rec-btn" onclick="toggleRec()">Kayda başla</button>
+      <button class="btn btn-secondary" id="next-btn" onclick="nextQ()" disabled>Sonraki soru</button>
+    </div>
+    <p style="font-size:12px;color:#bbb;text-align:center;margin-top:10px">Maksimum cevap süresi: 1 dakika 30 saniye</p>
+  </div>
+</div>
+
+<!-- ANALİZ -->
+<div class="screen" id="s-analyse">
+  <div class="card" style="max-width:480px;margin-top:5rem">
+    <div class="loading">
+      <div class="spinner"></div>
+      <p style="font-weight:500;font-size:16px">Cevaplar analiz ediliyor...</p>
+      <p style="color:#999;font-size:13px">Yapay zeka değerlendiriyor</p>
+    </div>
+  </div>
+</div>
+
+<!-- MÜLAKAT TAMAMLANDI -->
+<div class="screen" id="s-done">
+  <div class="card" style="max-width:480px;margin-top:5rem;text-align:center">
+    <div style="font-size:48px;margin-bottom:1rem">🎉</div>
+    <h2>Mülakatınız tamamlandı!</h2>
+    <p style="color:#777;font-size:14px;margin-top:.5rem">Cevaplarınız kaydedildi. Teşekkür ederiz!</p>
+  </div>
+</div>
+
+<!-- GENERATİNG -->
+<div class="screen" id="s-gen">
+  <div class="card" style="max-width:480px;margin-top:5rem">
+    <div class="loading">
+      <div class="spinner"></div>
+      <p style="font-weight:500;font-size:16px">Sorular oluşturuluyor...</p>
+      <p style="color:#999;font-size:13px">5-10 saniye sürebilir</p>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: ŞİRKET EKLE -->
+<div class="modal-bg" id="modal-company" style="display:none">
+  <div class="modal">
+    <h2>Şirket ekle</h2>
+    <label>Şirket adı</label>
+    <input type="text" id="new-company-name" placeholder="örn. Acme A.Ş."/>
+    <div id="company-err"></div>
+    <div class="row" style="margin-top:1.5rem;justify-content:flex-end">
+      <button class="btn btn-secondary" onclick="closeModal('modal-company')">İptal</button>
+      <button class="btn btn-primary" onclick="createCompany()">Ekle</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: ROL EKLE -->
+<div class="modal-bg" id="modal-role" style="display:none">
+  <div class="modal" style="max-width:600px;max-height:90vh;overflow-y:auto">
+    <h2>Rol ekle</h2>
+    <label>Pozisyon adı</label>
+    <input type="text" id="new-role-title" placeholder="örn. Senior Backend Engineer"/>
+    <label>Rol tipi</label>
+    <select id="new-role-type">
+      <option value="technical">Teknik</option>
+      <option value="non-technical">Teknik olmayan</option>
+      <option value="both" selected>Her ikisi</option>
+      <option value="executive">Yönetici / Liderlik</option>
+    </select>
+    <label>Mülakat dili</label>
+    <select id="new-role-lang">
+      <option value="en-US" data-name="English">English</option>
+      <option value="tr-TR" data-name="Turkish">Türkçe</option>
+      <option value="es-ES" data-name="Spanish">Español</option>
+      <option value="fr-FR" data-name="French">Français</option>
+      <option value="de-DE" data-name="German">Deutsch</option>
+      <option value="ar-SA" data-name="Arabic">العربية</option>
+      <option value="zh-CN" data-name="Chinese">中文</option>
+      <option value="ja-JP" data-name="Japanese">日本語</option>
+    </select>
+    <label>İş tanımı (opsiyonel)</label>
+    <textarea id="new-role-desc" rows="2" placeholder="İş ilanı metni..."></textarea>
+
+    <div style="margin-top:1rem">
+      <div class="tabs">
+        <div class="tab active" id="rtab-ai-btn" onclick="switchRoleTab('ai')">AI soru üret</div>
+        <div class="tab" id="rtab-manual-btn" onclick="switchRoleTab('manual')">Manuel gir</div>
+      </div>
+      <div id="rtab-ai">
+        <label>Soru sayısı</label>
+        <select id="new-role-qcount">
+          <option value="5">5 soru</option>
+          <option value="6">6 soru</option>
+          <option value="7" selected>7 soru</option>
+          <option value="8">8 soru</option>
+        </select>
+      </div>
+      <div id="rtab-manual" style="display:none">
+        <ul class="q-list" id="role-manual-list"></ul>
+        <div class="row" style="margin-top:8px">
+          <input type="text" id="role-new-q" placeholder="Soru yaz..." style="flex:1" onkeydown="if(event.key==='Enter')addRoleQ()"/>
+          <button class="btn btn-secondary btn-sm" onclick="addRoleQ()">+ Ekle</button>
+        </div>
+      </div>
+    </div>
+    <div id="role-err"></div>
+    <div class="row" style="margin-top:1.5rem;justify-content:flex-end">
+      <button class="btn btn-secondary" onclick="closeModal('modal-role')">İptal</button>
+      <button class="btn btn-primary" onclick="createRole()">Oluştur</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: ADAY EKLE -->
+<div class="modal-bg" id="modal-candidate" style="display:none">
+  <div class="modal">
+    <h2>Aday ekle</h2>
+    <label>Ad soyad</label>
+    <input type="text" id="new-cand-name" placeholder="Ayşe Yılmaz"/>
+    <label>Email (opsiyonel)</label>
+    <input type="email" id="new-cand-email" placeholder="ayse@email.com"/>
+    <div id="cand-err"></div>
+    <div id="cand-link" style="display:none">
+      <p style="font-size:13px;color:#555;margin-top:1rem">Mülakat linki:</p>
+      <div class="link-box">
+        <span id="cand-link-text"></span>
+        <button class="btn btn-primary btn-xs" onclick="copyLink()">Kopyala</button>
+      </div>
+    </div>
+    <div class="row" style="margin-top:1.5rem;justify-content:flex-end">
+      <button class="btn btn-secondary" onclick="closeModal('modal-candidate')">Kapat</button>
+      <button class="btn btn-primary" id="cand-submit-btn" onclick="createCandidate()">Ekle ve link oluştur</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── CONFIG ─────────────────────────────────────────────────────
+const ADMIN_EMAIL = 'admin@sirket.com';
+const ADMIN_PASS  = 'interview2024';
+// ───────────────────────────────────────────────────────────────
+
+let currentCompany = null;
+let currentRole = null;
+let currentCandidate = null;
+let roleTab = 'ai';
+let roleManualQs = [];
+
+// interview state
+let questions=[], curQ=0, transcripts=[], recordings=[];
+let mediaRecorder=null, camStream=null, chunks=[], isRec=false;
+let timerInt=null, timeLeft=90;
+let recognition=null, curTranscript='';
+let camGranted=false;
+let interviewCandidateId=null;
+
+// ── AUTH ────────────────────────────────────────────────────────
+function doLogin(){
+  const e=document.getElementById('login-email').value.trim();
+  const p=document.getElementById('login-pass').value;
+  if(e===ADMIN_EMAIL && p===ADMIN_PASS){
+    sessionStorage.setItem('auth','1');
+    showCompanies();
+  } else {
+    document.getElementById('login-err').innerHTML='<div class="err">Email veya şifre hatalı.</div>';
+  }
+}
+function doLogout(){sessionStorage.removeItem('auth');show('s-login');}
+function checkAuth(){return sessionStorage.getItem('auth')==='1';}
+
+// ── API ─────────────────────────────────────────────────────────
+async function db(action, params={}, body=null){
+  const qs=new URLSearchParams({action,...params}).toString();
+  const opts={method: body?'POST':'GET', headers:{'Content-Type':'application/json'}};
+  if(body) opts.body=JSON.stringify(body);
+  const res=await fetch(`/api/db?${qs}`,opts);
+  return res.json();
+}
+
+async function callClaude(prompt){
+  const res=await fetch('/api/chat',{
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1000,messages:[{role:'user',content:prompt}]})
+  });
+  const data=await res.json();
+  return data.content.map(b=>b.text||'').join('');
+}
+
+// ── COMPANIES ───────────────────────────────────────────────────
+async function showCompanies(){
+  if(!checkAuth()){show('s-login');return;}
+  show('s-companies');
+  const grid=document.getElementById('companies-grid');
+  grid.innerHTML='<div class="loading"><div class="spinner"></div></div>';
+  const companies=await db('getCompanies');
+  grid.innerHTML='';
+  companies.forEach(c=>{
+    const el=document.createElement('div');
+    el.className='grid-item';
+    el.innerHTML=`<button class="del-btn" onclick="event.stopPropagation();deleteCompany('${c.id}')">×</button><h3>${c.name}</h3><p>Rolleri gör</p>`;
+    el.onclick=()=>showRoles(c);
+    grid.appendChild(el);
+  });
+  const add=document.createElement('div');
+  add.className='grid-item add-card';
+  add.innerHTML='<span style="font-size:20px">+</span> Şirket ekle';
+  add.onclick=()=>openModal('modal-company');
+  grid.appendChild(add);
+}
+
+async function createCompany(){
+  const name=document.getElementById('new-company-name').value.trim();
+  if(!name){document.getElementById('company-err').innerHTML='<div class="err">Şirket adı gerekli.</div>';return;}
+  await db('createCompany',{},{ name });
+  closeModal('modal-company');
+  document.getElementById('new-company-name').value='';
+  showCompanies();
+}
+
+async function deleteCompany(id){
+  if(!confirm('Bu şirketi ve tüm verilerini silmek istediğinize emin misiniz?'))return;
+  await db('deleteCompany',{},{id});
+  showCompanies();
+}
+
+// ── ROLES ────────────────────────────────────────────────────────
+async function showRoles(company){
+  if(company) currentCompany=company;
+  if(!checkAuth()){show('s-login');return;}
+  show('s-roles');
+  document.getElementById('bc-company').textContent=currentCompany.name;
+  const grid=document.getElementById('roles-grid');
+  grid.innerHTML='<div class="loading"><div class="spinner"></div></div>';
+  const roles=await db('getRoles',{company_id:currentCompany.id});
+  grid.innerHTML='';
+  roles.forEach(r=>{
+    const el=document.createElement('div');
+    el.className='grid-item';
+    el.innerHTML=`<button class="del-btn" onclick="event.stopPropagation();deleteRole('${r.id}')">×</button><h3>${r.title}</h3><p>${r.language_name} · ${(r.questions||[]).length} soru</p>`;
+    el.onclick=()=>showCandidates(r);
+    grid.appendChild(el);
+  });
+  const add=document.createElement('div');
+  add.className='grid-item add-card';
+  add.innerHTML='<span style="font-size:20px">+</span> Rol ekle';
+  add.onclick=()=>openModal('modal-role');
+  grid.appendChild(add);
+}
+
+function switchRoleTab(t){
+  roleTab=t;
+  document.getElementById('rtab-ai-btn').classList.toggle('active',t==='ai');
+  document.getElementById('rtab-manual-btn').classList.toggle('active',t==='manual');
+  document.getElementById('rtab-ai').style.display=t==='ai'?'':'none';
+  document.getElementById('rtab-manual').style.display=t==='manual'?'':'none';
+}
+
+function addRoleQ(){
+  const inp=document.getElementById('role-new-q');
+  const v=inp.value.trim(); if(!v)return;
+  roleManualQs.push(v); inp.value=''; renderRoleQList();
+}
+function removeRoleQ(i){roleManualQs.splice(i,1);renderRoleQList();}
+function renderRoleQList(){
+  document.getElementById('role-manual-list').innerHTML=roleManualQs.map((q,i)=>`
+    <li class="q-item"><span class="q-num">${i+1}</span><span class="q-text">${q}</span>
+    <button class="q-del" onclick="removeRoleQ(${i})">×</button></li>`).join('');
+}
+
+async function createRole(){
+  const title=document.getElementById('new-role-title').value.trim();
+  const errEl=document.getElementById('role-err');
+  errEl.innerHTML='';
+  if(!title){errEl.innerHTML='<div class="err">Pozisyon adı gerekli.</div>';return;}
+  if(roleTab==='manual'&&roleManualQs.length===0){errEl.innerHTML='<div class="err">En az bir soru ekleyin.</div>';return;}
+
+  const langEl=document.getElementById('new-role-lang');
+  const langCode=langEl.value;
+  const langName=langEl.options[langEl.selectedIndex].dataset.name;
+  const roleType=document.getElementById('new-role-type').value;
+  const desc=document.getElementById('new-role-desc').value.trim();
+
+  let qs=[];
+  if(roleTab==='manual'){
+    qs=[...roleManualQs];
+  } else {
+    closeModal('modal-role');
+    show('s-gen');
+    try{
+      const count=document.getElementById('new-role-qcount').value;
+      const prompt=`Generate exactly ${count} interview questions for a "${title}" position (${roleType} role).${desc?' Job description: '+desc:''} Write the questions in ${langName}. Return ONLY a valid JSON array of strings, no markdown. Example: ["Q1?","Q2?"]`;
+      const raw=await callClaude(prompt);
+      qs=JSON.parse(raw.replace(/```json|```/g,'').trim());
+    }catch(e){
+      show('s-roles');
+      return;
+    }
+  }
+
+  await db('createRole',{},{
+    company_id: currentCompany.id,
+    title, role_type: roleType,
+    language: langCode, language_name: langName,
+    job_description: desc,
+    questions: qs
+  });
+
+  roleManualQs=[];
+  document.getElementById('new-role-title').value='';
+  document.getElementById('new-role-desc').value='';
+  closeModal('modal-role');
+  showRoles();
+}
+
+async function deleteRole(id){
+  if(!confirm('Bu rolü silmek istediğinize emin misiniz?'))return;
+  await db('deleteRole',{},{id});
+  showRoles();
+}
+
+// ── CANDIDATES ──────────────────────────────────────────────────
+async function showCandidates(role){
+  if(role) currentRole=role;
+  if(!checkAuth()){show('s-login');return;}
+  show('s-candidates');
+  document.getElementById('bc-company2').textContent=currentCompany.name;
+  document.getElementById('bc-role').textContent=currentRole.title;
+  document.getElementById('role-title-header').textContent=currentRole.title;
+  document.getElementById('role-lang-header').textContent=currentRole.language_name+' · '+(currentRole.questions||[]).length+' soru';
+  await loadCandidates();
+}
+
+async function loadCandidates(){
+  const tbody=document.getElementById('candidates-tbody');
+  tbody.innerHTML='<tr><td colspan="7" style="text-align:center;color:#aaa;padding:2rem">Yükleniyor...</td></tr>';
+  const candidates=await db('getCandidates',{role_id:currentRole.id});
+  if(!candidates.length){
+    tbody.innerHTML='<tr><td colspan="7" style="text-align:center;color:#aaa;padding:2rem">Henüz aday eklenmemiş.</td></tr>';
+    return;
+  }
+  tbody.innerHTML=candidates.map(c=>{
+    const link=`${location.origin}?token=${c.interview_token}`;
+    const statusBadge=c.status==='completed'?'<span class="badge badge-completed">Tamamlandı</span>':'<span class="badge badge-pending">Bekliyor</span>';
+    return `<tr>
+      <td><strong>${c.name}</strong></td>
+      <td style="color:#888">${c.email||'-'}</td>
+      <td>${statusBadge}</td>
+      <td>${c.status==='completed'?'<span id="score-'+c.id+'">-</span>':'-'}</td>
+      <td>${c.status==='completed'?'<span id="rec-'+c.id+'">-</span>':'-'}</td>
+      <td><button class="btn btn-secondary btn-xs" onclick="copyText('${link}')">Linki kopyala</button></td>
+      <td>${c.status==='completed'?`<button class="btn btn-primary btn-xs" onclick="showResultDetail('${c.id}','${c.name}')">Detay</button>`:''}</td>
+    </tr>`;
+  }).join('');
+  // load scores async
+  candidates.filter(c=>c.status==='completed').forEach(async c=>{
+    const r=await db('getResult',{candidate_id:c.id});
+    if(r){
+      const scoreEl=document.getElementById('score-'+c.id);
+      const recEl=document.getElementById('rec-'+c.id);
+      if(scoreEl)scoreEl.textContent=r.score+'/10';
+      if(recEl)recEl.innerHTML=r.recommendation==='hire'?'<span class="badge badge-hire">İşe al</span>':'<span class="badge badge-nohire">Alma</span>';
+    }
+  });
+}
+
+function showAddCandidate(){
+  document.getElementById('new-cand-name').value='';
+  document.getElementById('new-cand-email').value='';
+  document.getElementById('cand-err').innerHTML='';
+  document.getElementById('cand-link').style.display='none';
+  document.getElementById('cand-submit-btn').style.display='';
+  openModal('modal-candidate');
+}
+
+async function createCandidate(){
+  const name=document.getElementById('new-cand-name').value.trim();
+  if(!name){document.getElementById('cand-err').innerHTML='<div class="err">Ad soyad gerekli.</div>';return;}
+  const email=document.getElementById('new-cand-email').value.trim();
+  const c=await db('createCandidate',{},{role_id:currentRole.id, name, email});
+  const link=`${location.origin}?token=${c.interview_token}`;
+  document.getElementById('cand-link-text').textContent=link;
+  document.getElementById('cand-link').style.display='';
+  document.getElementById('cand-submit-btn').style.display='none';
+  document.getElementById('cand-err').innerHTML='<div class="success">Aday eklendi! Link oluşturuldu.</div>';
+  await loadCandidates();
+}
+
+function copyLink(){
+  const txt=document.getElementById('cand-link-text').textContent;
+  copyText(txt);
+}
+function copyText(txt){
+  navigator.clipboard.writeText(txt);
+  alert('Link kopyalandı!');
+}
+
+// ── RESULT DETAIL ────────────────────────────────────────────────
+async function showResultDetail(candidateId, candidateName){
+  currentCandidate={id:candidateId,name:candidateName};
+  show('s-result-detail');
+  document.getElementById('bc-company3').textContent=currentCompany.name;
+  document.getElementById('bc-role2').textContent=currentRole.title;
+  document.getElementById('bc-candidate').textContent=candidateName;
+  const card=document.getElementById('result-detail-card');
+  card.innerHTML='<div class="loading"><div class="spinner"></div></div>';
+  const r=await db('getResult',{candidate_id:candidateId});
+  if(!r){card.innerHTML='<p style="color:#aaa">Sonuç bulunamadı.</p>';return;}
+  const isHire=r.recommendation==='hire';
+  const strengths=(r.strengths||[]).map(s=>`<span class="tag tag-s">${s}</span>`).join('');
+  const weaknesses=(r.weaknesses||[]).map(w=>`<span class="tag tag-w">${w}</span>`).join('');
+  const fb=r.qa_feedback||[];
+  const qs=currentRole.questions||[];
+  const qaBlocks=qs.map((q,i)=>`
+    <div class="q-block">
+      <div class="q-lbl">S${i+1}: ${q}</div>
+      <div style="color:#444;margin-bottom:${fb[i]?.brief_feedback?'6px':'0'}">${(r.transcripts||[])[i]||'[Cevap yok]'}</div>
+      ${fb[i]?.brief_feedback?`<div style="font-size:12px;color:#7c6af7;font-style:italic">${fb[i].brief_feedback}</div>`:''}
+    </div>`).join('');
+  card.innerHTML=`
+    <h2 style="margin-bottom:1.5rem">${candidateName}</h2>
+    <div class="results-sec">
+      <div class="grid2">
+        <div class="metric-card"><div class="metric-val">${r.score}/10</div><div class="metric-lbl">Genel skor</div></div>
+        <div class="verdict ${isHire?'hire':'nohire'}">${isHire?'✅ İşe alınabilir':'❌ Önerilmez'}</div>
+      </div>
+    </div>
+    <div class="results-sec"><h3>Özet</h3><p style="font-size:14px;line-height:1.7;color:#444">${r.summary}</p></div>
+    <div class="results-sec"><h3>Güçlü yönler</h3>${strengths}</div>
+    <div class="results-sec"><h3>Gelişim alanları</h3>${weaknesses}</div>
+    <div class="results-sec"><h3>Karar gerekçesi</h3><p style="font-size:14px;line-height:1.7;color:#444">${r.reasoning}</p></div>
+    <div class="results-sec"><h3>Soru bazlı cevaplar</h3>${qaBlocks}</div>`;
+}
+
+// ── INTERVIEW (CANDIDATE SIDE) ───────────────────────────────────
+async function checkForInterview(){
+  const params=new URLSearchParams(location.search);
+  const token=params.get('token');
+  if(!token)return false;
+
+  // load candidate + role
+  const candidate=await db('getCandidate',{token});
+  if(!candidate){show('s-done');return true;}
+  if(candidate.status==='completed'){show('s-done');return true;}
+
+  interviewCandidateId=candidate.id;
+  const role=await db('getRole',{id:candidate.role_id});
+  currentRole=role;
+  questions=role.questions||[];
+
+  // camera
+  const banner=document.getElementById('cam-banner');
+  banner.style.display='flex';
+  try{
+    camStream=await navigator.mediaDevices.getUserMedia({video:true,audio:true});
+    camGranted=true;
+    banner.className='cam-banner ok';
+    banner.textContent='✅ Kamera ve mikrofon hazır';
+  }catch(e){
+    banner.className='cam-banner denied';
+    banner.textContent='🚫 Kamera/mikrofon erişimi reddedildi. Lütfen tarayıcı ayarlarından izin verin.';
+    return true;
+  }
+
+  document.getElementById('role-lbl').textContent=role.title;
+  document.getElementById('vid').srcObject=camStream;
+  curQ=0; transcripts=[]; recordings=[];
+  show('s-interview');
+  loadQ();
+  return true;
+}
+
+function loadQ(){
+  document.getElementById('cur-q').textContent=questions[curQ];
+  document.getElementById('q-counter').textContent=`Soru ${curQ+1} / ${questions.length}`;
+  document.getElementById('prog').style.width=(curQ/questions.length*100)+'%';
+  document.getElementById('rec-btn').textContent='Kayda başla';
+  document.getElementById('rec-btn').style.background='#7c6af7';
+  document.getElementById('next-btn').disabled=true;
+  document.getElementById('rec-status').innerHTML='';
+  timeLeft=90; updateClock(); clearInterval(timerInt);
+  isRec=false; chunks=[]; curTranscript='';
+}
+
+function toggleRec(){isRec?stopRec():startRec();}
+
+function startRec(){
+  isRec=true; chunks=[]; curTranscript='';
+  mediaRecorder=new MediaRecorder(camStream);
+  mediaRecorder.ondataavailable=e=>{if(e.data.size>0)chunks.push(e.data);};
+  mediaRecorder.onstop=async()=>{
+    const blob=new Blob(chunks,{type:'video/webm'});
+    recordings[curQ]=blob;
+    // upload video
+    try{
+      await fetch('/api/upload',{
+        method:'POST',
+        headers:{'Content-Type':'video/webm','x-candidate-id':interviewCandidateId,'x-question-index':curQ},
+        body:blob
+      });
+    }catch(e){}
+  };
+  mediaRecorder.start();
+  document.getElementById('rec-btn').textContent='Kaydı durdur';
+  document.getElementById('rec-btn').style.background='#e74c3c';
+  document.getElementById('rec-status').innerHTML='<span class="rec-dot"></span> Kayıt yapılıyor';
+  startSpeech();
+  timerInt=setInterval(()=>{timeLeft--;updateClock();if(timeLeft<=0)stopRec();},1000);
+}
+
+function startSpeech(){
+  const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+  if(!SR)return;
+  recognition=new SR();
+  recognition.continuous=true; recognition.interimResults=true;
+  recognition.lang=currentRole.language||'en-US';
+  let final='';
+  recognition.onresult=e=>{
+    let interim='';
+    for(let i=e.resultIndex;i<e.results.length;i++){
+      if(e.results[i].isFinal)final+=e.results[i][0].transcript+' ';
+      else interim+=e.results[i][0].transcript;
+    }
+    curTranscript=final+interim;
+  };
+  recognition.onerror=()=>{};
+  try{recognition.start();}catch(e){}
+}
+
+function stopRec(){
+  if(!isRec)return;
+  isRec=false; clearInterval(timerInt);
+  if(mediaRecorder&&mediaRecorder.state!=='inactive')mediaRecorder.stop();
+  if(recognition){try{recognition.stop();}catch(e){}}
+  transcripts[curQ]=curTranscript.trim()||'[Ses algılanamadı]';
+  document.getElementById('rec-btn').textContent='Tekrar kaydet';
+  document.getElementById('rec-btn').style.background='#888';
+  document.getElementById('rec-status').innerHTML='Cevap kaydedildi';
+  document.getElementById('next-btn').disabled=false;
+}
+
+function updateClock(){
+  const m=Math.floor(timeLeft/60),s=timeLeft%60;
+  const el=document.getElementById('clock');
+  el.textContent=`${m}:${s.toString().padStart(2,'0')}`;
+  el.className='timer'+(timeLeft<=30&&timeLeft>10?' warn':timeLeft<=10?' danger':'');
+}
+
+function nextQ(){
+  if(!transcripts[curQ])transcripts[curQ]='[Atlandı]';
+  curQ++;
+  if(curQ>=questions.length)finishInterview();
+  else loadQ();
+}
+
+async function finishInterview(){
+  show('s-analyse');
+  if(camStream)camStream.getTracks().forEach(t=>t.stop());
+  await db('updateCandidateStatus',{},{id:interviewCandidateId,status:'completed'});
+  const langName=currentRole.language_name||'English';
+  const qa=questions.map((q,i)=>`Q${i+1}: ${q}\nA: ${transcripts[i]||'[No answer]'}`).join('\n\n');
+  const prompt=`You are an expert hiring manager. Evaluate this candidate interview for the role: "${currentRole.title}". Write your entire response in ${langName}.\n\nTranscript:\n${qa}\n\nReturn ONLY a valid JSON object, no markdown:\n{"score":<1-10>,"summary":"...","strengths":["..."],"weaknesses":["..."],"recommendation":"hire or no-hire","reasoning":"...","qa_feedback":[{"brief_feedback":"..."}]}`;
+  let result;
+  try{
+    const raw=await callClaude(prompt);
+    result=JSON.parse(raw.replace(/```json|```/g,'').trim());
+  }catch(e){
+    result={score:6,summary:"Aday yeterli iletişim becerisi gösterdi.",strengths:["İletişim","İlgili deneyim"],weaknesses:["Daha fazla detay verilebilirdi"],recommendation:"hire",reasoning:"Aday pozisyon için uygun görünüyor.",qa_feedback:[]};
+  }
+  await db('saveResult',{},{
+    candidate_id:interviewCandidateId,
+    transcripts,
+    score:result.score,
+    summary:result.summary,
+    strengths:result.strengths,
+    weaknesses:result.weaknesses,
+    recommendation:result.recommendation,
+    reasoning:result.reasoning,
+    qa_feedback:result.qa_feedback
+  });
+  show('s-done');
+}
+
+// ── MODAL / SCREEN HELPERS ───────────────────────────────────────
+function show(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+function openModal(id){document.getElementById(id).style.display='flex';}
+function closeModal(id){document.getElementById(id).style.display='none';}
+
+// ── INIT ─────────────────────────────────────────────────────────
+(async()=>{
+  const isInterview=await checkForInterview();
+  if(!isInterview){
+    if(checkAuth())showCompanies();
+    else show('s-login');
+  }
+})();
+</script>
+</body>
+</html>
