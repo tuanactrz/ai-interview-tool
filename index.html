@@ -661,10 +661,12 @@ async function showResultDetail(candidateId, candidateName){
 async function checkForInterview(){
   const params=new URLSearchParams(location.search);
   const token=params.get('token');
+  console.log('TOKEN:', token);
   if(!token)return false;
 
   // load candidate + role
   const candidate=await db('getCandidate',{token});
+  console.log('TOKEN:', token);
   if(!candidate){show('s-done');return true;}
   if(candidate.status==='completed'){show('s-done');return true;}
 
