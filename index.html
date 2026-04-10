@@ -803,7 +803,8 @@ function stopRec(){
   document.getElementById('rec-btn').textContent='Tekrar kaydet';
   document.getElementById('rec-btn').style.background='#888';
   document.getElementById('rec-status').innerHTML='Cevap kaydedildi';
-  document.getElementById('next-btn').disabled=false;
+  document.getElementById('next-btn').disabled=true;
+  document.getElementById('rec-status').innerHTML='Video yükleniyor...';
 }
 
 function updateClock(){
