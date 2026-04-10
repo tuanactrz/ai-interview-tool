@@ -703,7 +703,15 @@ async function checkForInterview(){
   currentRole=role;
   questions=role.questions||[];
 
-  // camera
+  // karşılama ekranını göster
+  document.getElementById('welcome-name').textContent=candidate.name;
+  document.getElementById('welcome-role').textContent=role.title;
+  document.getElementById('welcome-qcount').textContent=questions.length;
+  show('s-welcome');
+  return true;
+}
+
+async function startInterviewFromWelcome(){
   const banner=document.getElementById('cam-banner');
   banner.style.display='flex';
   try{
@@ -713,16 +721,14 @@ async function checkForInterview(){
     banner.textContent='✅ Kamera ve mikrofon hazır';
   }catch(e){
     banner.className='cam-banner denied';
-    banner.textContent='🚫 Kamera/mikrofon erişimi reddedildi. Lütfen tarayıcı ayarlarından izin verin.';
-    return true;
+    banner.textContent='🚫 Kamera/mikrofon erişimi reddedildi.';
+    return;
   }
-
-  document.getElementById('role-lbl').textContent=role.title;
+  document.getElementById('role-lbl').textContent=currentRole.title;
   document.getElementById('vid').srcObject=camStream;
   curQ=0; transcripts=[]; recordings=[];
   show('s-interview');
   loadQ();
-  return true;
 }
 
 function loadQ(){
