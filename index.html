@@ -398,8 +398,15 @@ async function db(action, params={}, body=null){
   const qs=new URLSearchParams({action,...params}).toString();
   const opts={method: body?'POST':'GET', headers:{'Content-Type':'application/json'}};
   if(body) opts.body=JSON.stringify(body);
-  const res=await fetch(`/api/db?${qs}`,opts);
-  return res.json();
+  try{
+    const res=await fetch(`/api/db?${qs}`,opts);
+    const text=await res.text();
+    console.log('DB response:', action, text.substring(0,200));
+    return JSON.parse(text);
+  }catch(e){
+    console.error('DB error:', action, e);
+    return null;
+  }
 }
 
 async function callClaude(prompt){
