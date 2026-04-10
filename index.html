@@ -657,24 +657,25 @@ async function showResultDetail(candidateId, candidateName){
   document.getElementById('bc-candidate').textContent=candidateName;
   const card=document.getElementById('result-detail-card');
   card.innerHTML='<div class="loading"><div class="spinner"></div></div>';
-let videoUrls=[];
-try{
-  videoUrls=await db('getVideoUrls',{
-    candidate_id:candidateId,
-    candidate_name:candidateName,
-    question_count:(currentRole.questions||[]).length
-  });
-  console.log('videoUrls:', JSON.stringify(videoUrls));
-}catch(e){
-  console.error('videoUrls error:', e);
-}
+  
+  const r=await db('getResult',{candidate_id:candidateId});
   if(!r){card.innerHTML='<p style="color:#aaa">Sonuç bulunamadı.</p>';return;}
+  
+  let videoUrls=[];
+  try{
+    videoUrls=await db('getVideoUrls',{
+      candidate_id:candidateId,
+      candidate_name:candidateName,
+      question_count:(currentRole.questions||[]).length
+    });
+  }catch(e){console.error('video error:',e);}
+
   const isHire=r.recommendation==='hire';
   const strengths=(r.strengths||[]).map(s=>`<span class="tag tag-s">${s}</span>`).join('');
   const weaknesses=(r.weaknesses||[]).map(w=>`<span class="tag tag-w">${w}</span>`).join('');
   const fb=r.qa_feedback||[];
   const qs=currentRole.questions||[];
- const qaBlocks=qs.map((q,i)=>{
+  const qaBlocks=qs.map((q,i)=>{
     const vid=videoUrls&&videoUrls[i];
     const videoHtml=vid&&vid.url?`
       <div style="margin-top:10px">
@@ -688,6 +689,7 @@ try{
       ${videoHtml}
     </div>`;
   }).join('');
+
   card.innerHTML=`
     <h2 style="margin-bottom:1.5rem">${candidateName}</h2>
     <div class="results-sec">
