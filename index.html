@@ -657,12 +657,17 @@ async function showResultDetail(candidateId, candidateName){
   document.getElementById('bc-candidate').textContent=candidateName;
   const card=document.getElementById('result-detail-card');
   card.innerHTML='<div class="loading"><div class="spinner"></div></div>';
-  const r=await db('getResult',{candidate_id:candidateId});
-  const videoUrls=await db('getVideoUrls',{
+let videoUrls=[];
+try{
+  videoUrls=await db('getVideoUrls',{
     candidate_id:candidateId,
     candidate_name:candidateName,
     question_count:(currentRole.questions||[]).length
   });
+  console.log('videoUrls:', JSON.stringify(videoUrls));
+}catch(e){
+  console.error('videoUrls error:', e);
+}
   if(!r){card.innerHTML='<p style="color:#aaa">Sonuç bulunamadı.</p>';return;}
   const isHire=r.recommendation==='hire';
   const strengths=(r.strengths||[]).map(s=>`<span class="tag tag-s">${s}</span>`).join('');
